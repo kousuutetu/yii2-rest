@@ -2,6 +2,7 @@
 namespace ginkgo\rest;
 
 use Yii;
+use yii\helpers\Url;
 use yii\web\ServerErrorHttpException;
 
 class CreateAction extends \yii\rest\CreateAction
@@ -24,7 +25,10 @@ class CreateAction extends \yii\rest\CreateAction
 
         $model->load(Yii::$app->getRequest()->getBodyParams(), '');
         if ($model->save()) {
-            Yii::$app->getResponse()->setStatusCode(201);
+            $response = Yii::$app->getResponse();
+            $response->setStatusCode(201);
+            $id = implode(',', array_values($model->getPrimaryKey(true)));
+            $response->getHeaders()->set('Location', Url::toRoute([$this->viewAction, 'id' => $id], true));
         } elseif (!$model->hasErrors()) {
             throw new ServerErrorHttpException('Failed to create the object for unknown reason.');
         }
